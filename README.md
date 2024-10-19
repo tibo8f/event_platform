@@ -1453,3 +1453,23 @@ Installing mongodb :
 npm install mongo
 ose mongodb
 ```
+
+# Deployment on vercel
+
+(see at 1:32 of the tutorial.)
+
+Vercel expose the website and the api to internet : https://event-platform-three-black.vercel.app/.
+
+## Configuration of the project
+
+- Link vercel and git. Push the code on github
+- framework is nextjs. Root is ./
+- add everything that is in the **.env.local** to environment variables on vercel.
+
+We can had an endpoint to **clerk**. We had an enpoint : https://event-platform-three-black.vercel.app/api/webhooks/clerk in Webhooks.
+
+Then vercel give us a Signing secret. In .env.local we can had a variable WEBHOOK_SECRET= with the secret signing.
+
+Then we can go to vercel, in the environment variables in settings and paste our WEBHOOK_SECRET= with the secret signing. After changing an environment variable we have to redeploy the project. So go to deployments and redeploy.
+
+Go to Clerk dashboard and make sure to delete all the already existing user because those users were created before we hocked it up to our database.
