@@ -1,5 +1,3 @@
-// Uploadthings (File uploader) Creating your first FileRoute see docs : https://docs.uploadthing.com/getting-started/appdir
-
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
  

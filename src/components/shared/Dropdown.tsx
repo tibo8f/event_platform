@@ -1,6 +1,3 @@
-// Using select button from ui.shadcn https://ui.shadcn.com/docs/components/select
-
-import React, { startTransition, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -9,6 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ICategory } from "@/lib/database/models/category.model";
+import { startTransition, useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,17 +19,37 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "../ui/input";
+import {
+  createCategory,
+  getAllCategories,
+} from "@/lib/actions/category.actions";
 
 type DropdownProps = {
   value?: string;
-  onChangeHandler?: () => void; // function that returns nothing
+  onChangeHandler?: () => void;
 };
-const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
-  // User can use one of the predefined category or create their own
-  const [categories, setCategories] = useState<ICategory[]>([]); // <ICategory> specify the type of the category. We can add a category by adding an object into the [] like this : { _id: "1", name: "Category 1" },
-  const [newCategroy, setNewCategory] = useState("");
 
-  const handleAddCategory = () => {};
+const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [newCategory, setNewCategory] = useState("");
+
+  const handleAddCategory = () => {
+    createCategory({
+      categoryName: newCategory.trim(),
+    }).then((category) => {
+      setCategories((prevState) => [...prevState, category]);
+    });
+  };
+
+  useEffect(() => {
+    const getCategories = async () => {
+      const categoryList = await getAllCategories();
+
+      categoryList && setCategories(categoryList as ICategory[]);
+    };
+
+    getCategories();
+  }, []);
 
   return (
     <Select onValueChange={onChangeHandler} defaultValue={value}>
@@ -52,7 +70,7 @@ const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
 
         <AlertDialog>
           <AlertDialogTrigger className="p-medium-14 flex w-full rounded-sm py-3 pl-8 text-primary-500 hover:bg-primary-50 focus:text-primary-500">
-            Open
+            Add new category
           </AlertDialogTrigger>
           <AlertDialogContent className="bg-white">
             <AlertDialogHeader>
@@ -72,7 +90,7 @@ const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
                 onClick={() => startTransition(handleAddCategory)}
               >
                 Add
-              </AlertDialogAction>{" "}
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

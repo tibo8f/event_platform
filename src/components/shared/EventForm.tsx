@@ -26,6 +26,9 @@ import Image from "next/image";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "../ui/checkbox";
+import { useUploadThing } from "@/lib/uploadthing";
+import { useRouter } from "next/navigation";
+import { createEvent } from "@/lib/actions/event.actions";
 
 // Defining the type of the input of the eventForm
 type EventformProps = {
@@ -34,20 +37,49 @@ type EventformProps = {
 };
 
 const EventForm = ({ userId, type }: EventformProps) => {
-  // 1. Define your form.
   const [files, setFiles] = useState<File[]>([]);
   const initialValues = eventDefaultValues;
+  const router = useRouter();
+
+  const { startUpload } = useUploadThing("imageUploader"); // Did not use the same function startUpload isntead of startUpLoad
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: initialValues,
   });
 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof eventFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof eventFormSchema>) {
+    console.log("submitting");
+    let uploadedImageUrl = values.imageUrl;
+
+    // Check if the user uploaded the image
+    if (files.length > 0) {
+      const uploadedImages = await startUpload(files);
+
+      if (!uploadedImages) {
+        throw new Error("File upload failed");
+        // return;
+      }
+
+      uploadedImageUrl = uploadedImages[0].url;
+    }
+
+    if (type === "Create") {
+      try {
+        const newEvent = await createEvent({
+          event: { ...values, imageUrl: uploadedImageUrl },
+          userId,
+          path: "/profile",
+        });
+        if (newEvent) {
+          console.log("newevent");
+          form.reset();
+          router.push(`/events/${newEvent._id}`);
+        }
+      } catch (error) {
+        console.log("error : ", error);
+      }
+    }
   }
 
   return (
